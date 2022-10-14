@@ -1,51 +1,41 @@
-const { User, Post } = require("../models");
+const db = require("../models/connectDB");
+const { User } = require("../models");
+const Apply = db.sequelize.models.Apply;
 
-const signUp = async (email, password, name, group) => {
+const signUp = async (email, password, name) => {
   const user = await User.create({
     email: email,
     password: password,
     name: name,
-    group: group,
   });
 };
 
-const apply = async (email, postId) => {
-  // 지원자 회원여부 확인
-  // 지원자 이미 공고한 이력이 있는지 확인
-  // 존재하는 공고인지 확인
-  const user = await User.findOne({
+const checkApply = async (userId) => {
+  const applies = await Apply.count({
     where: {
-      email: email,
-    },
-  });
-  const post = await Post.findOne({
-    where: {
-      id: postId,
+      UserId: userId,
     },
   });
 
-  if (!user) {
-    const error = new Error("UnAuthenticated");
-    error.message = "Invalid_User";
-    error.statusCode = 401;
-    throw error;
-  }
-  if (user.group !== 1) {
-    const error = new Error("Forbidden");
-    error.message = "Forbidden_Request";
-    error.statusCode = 403;
-    throw error;
-  }
-  if (!post) {
-    const error = new Error("NotFound");
-    error.message = "Not_Found";
-    error.statusCode = 404;
-    throw error;
-  }
-  await User.addApply({
-    postId: post,
-  });
+  return applies;
 };
+
+const apply = async (userId, postId) => {
+  // Apply UserId 컬럼 유무로 유저가 지원한 이력이 있는지 확인
+  const applyCount = await checkApply(userId);
+  if (applyCount) {
+    const err = new Error("이미 다른 곳에 지원하셨습니다.");
+    err.statusCode = 401;
+    throw err;
+  }
+  const applied = await Apply.create({
+    UserId: userId,
+    PostId: postId,
+  });
+
+  return applied;
+};
+
 module.exports = {
   signUp,
   apply,
