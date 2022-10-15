@@ -1,29 +1,16 @@
 const { userService } = require("../services");
 
-const signIn = async (req, res) => {
-  const { email, password } = req.body;
-
-  const accessToken = await userService.signIn(email, password);
-
-  res.status(200).json({ accessToken });
-};
-
 const signUp = async (req, res) => {
   try {
-    const { email, password, name, group } = req.body;
+    const { email, password, name } = req.body;
 
-    if (!name || !email || !password || !group) {
-      const error = new Error("KEY_ERROR");
+    if (!name || !email || !password) {
+      const error = new Error("Key_Error");
       error.statusCode = 400;
       throw error;
     }
-    if (group === 1 || group === 2) {
-      const error = new Error("INVALID_VALUE");
-      error.statusCode = 409;
-      throw error;
-    }
 
-    await userService.signUp(name, email, password, group);
+    await userService.signUp(name, email, password);
 
     return res.status(201).json({ message: "회원가입 완료!" });
   } catch (err) {
@@ -34,23 +21,29 @@ const signUp = async (req, res) => {
 
 const apply = async (req, res) => {
   try {
-    const { email, postId } = req.params;
+    const { userId, postId } = req.body;
 
-    if (!email || !postId) {
+    if (!userId || !postId) {
       const err = new Error("Key Error");
       err.statusCode = 400;
       throw err;
     }
-    await userService.apply(email, postId);
 
-    return res.status(201).json({ message: "지원 성공" });
+    const result = await userService.apply(userId, postId);
+    if (!result) {
+      const err = new Error("Not_Found");
+      err.statusCode = 404;
+      throw err;
+    }
+    return res.status(201).json({
+      message: "지원에 성공했습니다.",
+    });
   } catch (err) {
-    console.log(err);
     return res.status(err.statusCode || 500).json({ message: err.message });
   }
 };
 
 module.exports = {
-  signIn,
   signUp,
+  apply,
 };

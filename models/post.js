@@ -14,7 +14,7 @@ module.exports = class Post extends Sequelize.Model {
         },
         haegin: {
           // 채용 보상금
-          type: Sequelize.SMALLINT.UNSIGNED,
+          type: Sequelize.INTEGER.UNSIGNED,
           allowNull: true,
           defaultValue: 0,
         },
@@ -29,7 +29,7 @@ module.exports = class Post extends Sequelize.Model {
         underscored: false,
         moduleName: "Post",
         tableName: "posts",
-        paranoid: true, // hard delete 동작허용
+        paranoid: false, // hard delete 동작허용
         charset: "utf8mb4",
         collate: "utf8mb4_general_ci",
       }
