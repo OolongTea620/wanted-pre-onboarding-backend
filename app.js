@@ -45,3 +45,6 @@ app.use((err, req, res, next) => {
 });
 
 start();
+
+//통합 테스트
+module.exports = app;
